@@ -1,0 +1,42 @@
+name: Deploy to EC2 via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Build Docker image
+      run: |
+        docker build -t devsecops-app .
+
+    - name: Save Docker image as tar
+      run: |
+        docker save devsecops-app | gzip > image.tar.gz
+
+    - name: Copy Docker image to EC2
+      run: |
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa image.tar.gz ${{ secrets.EC2_HOST }}:/home/ec2-user/
+
+    - name: Load Docker image and run it on EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_HOST }} << 'EOF'
+          docker stop devsecops-app || true
+          docker rm devsecops-app || true
+          gunzip -c image.tar.gz | docker load
+          docker run -d -p 80:3000 --name devsecops-app devsecops-app
+        EOF
