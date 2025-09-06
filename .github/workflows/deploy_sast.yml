@@ -24,7 +24,11 @@ jobs:
         composer update --no-ansi --no-interaction --no-progress
           
     - name: Run tests with phpunit/phpunit
-      run: vendor/bin/phpunit --coverage-clover=coverage.xml
+      uses: php-actions/phpunit@v4
+      with:
+        php-version: '8.1'
+        coverage: "coverage/clover.xml"     
+      
           
     - name: SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v5
