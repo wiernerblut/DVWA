@@ -35,8 +35,8 @@ jobs:
     - name: Load Docker image and run it on EC2
       run: |
         ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          docker stop devsecops-app || true
-          docker rm devsecops-app || true
+          sudo docker stop devsecops-app || true
+          sudo docker rm devsecops-app || true
           gunzip -c image.tar.gz | docker load
-          docker run -d -p 80:3000 --name devsecops-app devsecops-app
+          sudo docker run -d -p 80:3000 --name devsecops-app devsecops-app
         EOF
