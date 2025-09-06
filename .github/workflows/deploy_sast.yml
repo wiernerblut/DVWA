@@ -30,7 +30,7 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa image.tar.gz ${{ secrets.EC2_HOST }}:/home/ec2-user/
+        sudo scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa image.tar.gz ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/
 
     - name: Load Docker image and run it on EC2
       run: |
